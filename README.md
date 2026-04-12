@@ -50,13 +50,32 @@ A production-ready boilerplate for building React applications with a **separate
 - 📊 **Internal Tools** - Dashboards, admin panels, CRUD apps
 - 💼 **SaaS Products** - Multi-user apps with separate API
 - 👨‍💻 **Freelance Projects** - Reusable template for client work
+- 💬 **Real-time Apps** - Chat, notifications, live updates (WebSocket/SSE supported via HyperExpress)
 
 ### When NOT to Use
 
-- 📰 SEO-heavy content sites → Use **Next.js** with SSR
-- 💬 Real-time apps (chat, live updates) → Use **Supabase** or **Socket.io**
-- 🏢 Enterprise monoliths → Use **NestJS** + Angular/React
-- 📄 Simple static sites → Use **Vite** + React only
+- 📰 **SEO-heavy content sites** → Use **Next.js** with SSR (this stack is client-side rendered)
+- 📄 **Simple static sites** → Use **Vite** + React only (no backend needed)
+- 🏗️ **Complex enterprise requiring microservices** → Use **NestJS**, **Go**, or dedicated service architecture
+
+---
+
+## 💪 Scaling Potential
+
+HyperReact can handle **100,000+ RPS** with proper infrastructure:
+
+| Component | Service | Cost/Month |
+|-----------|---------|------------|
+| **Frontend** | Cloudflare Pages | Free (unlimited bandwidth) |
+| **Backend** | Vultr High Frequency | $6-12 |
+| **Database** | SQLite WAL + Litestream | ~$5 (replication) |
+| **Total** | - | **~$11-17/month** |
+
+With SQLite WAL mode + Litestream replication, you get:
+- ✅ High write throughput
+- ✅ Point-in-time recovery
+- ✅ Cross-region replication
+- ✅ Horizontal read scaling
 
 ---
 

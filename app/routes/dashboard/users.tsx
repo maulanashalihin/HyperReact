@@ -2,6 +2,7 @@ import type { ClientLoaderFunctionArgs } from 'react-router';
 import { useFetcher, useLoaderData } from 'react-router';
 import { useState } from 'react';
 import { useAuth } from '../../hooks/use-auth';
+import { useToast } from '../../components/ui/toast';
 import { fetchUsers, usersApi } from '../../lib/api';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
@@ -18,7 +19,6 @@ import {
   Trash2,
   Edit,
 } from 'lucide-react';
-import { toast } from 'sonner';
 import type { User } from '../../lib/types';
 
 // Loader function - runs before component renders (single request)
@@ -41,6 +41,7 @@ export default function UsersPage() {
   const { token } = useAuth();
   const { users: loaderUsers, error: loaderError } = useLoaderData<typeof clientLoader>();
   const fetcher = useFetcher();
+  const toast = useToast();
   
   const [users, setUsers] = useState<User[]>(loaderUsers || []);
   const [error, setError] = useState(loaderError || '');
@@ -70,13 +71,15 @@ export default function UsersPage() {
 
     try {
       await usersApi.delete(userToDelete, token);
-      toast.success('User deleted', {
+      toast.success({
+        title: 'User deleted',
         description: 'The user has been successfully removed.',
       });
       setUsers(users.filter((u) => u.id !== userToDelete));
       setUserToDelete(null);
     } catch (err: any) {
-      toast.error('Delete failed', {
+      toast.error({
+        title: 'Delete failed',
         description: err.message || 'Failed to delete user',
       });
     }

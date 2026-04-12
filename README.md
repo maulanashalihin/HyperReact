@@ -20,7 +20,7 @@ A production-ready boilerplate for building React applications with a **separate
 - **🔄 React Router v7** - Modern routing with loaders and data mutations
 - **🔐 JWT Authentication** - Ready-to-use auth system with bcrypt password hashing
 - **📦 TypeORM + SQLite** - Type-safe database with zero configuration
-- **🎨 Beautiful UI** - TailwindCSS + custom UI components (Avatar, Badge, Button, Card, Input)
+- **🎨 Beautiful UI** - TailwindCSS + custom UI components (Avatar, Badge, Button, Card, Input, Toast)
 - **🐳 Docker-Ready** - Deploy anywhere with Docker
 - **📱 Responsive Design** - Mobile-first, production-ready components
 
@@ -187,7 +187,6 @@ npm run typecheck
 | TailwindCSS | v4.2.2 | Utility-first CSS |
 | TypeScript | v5.9.3 | Type safety |
 | Lucide React | v1.8.0 | Icon library |
-| Sonner | v2.0.7 | Toast notifications |
 
 #### Custom UI Components
 
@@ -196,6 +195,7 @@ npm run typecheck
 - **Button** - Gradient variants with isLoading support
 - **Card** - Composed components (Card, CardHeader, CardTitle, CardContent, CardFooter)
 - **Input** - Form input with icon support and error states
+- **Toast** - Custom toast notifications with auto-dismiss and icons
 
 ### Backend
 
@@ -458,7 +458,6 @@ Set production environment variables:
 - [TypeORM](https://typeorm.io/)
 - [TailwindCSS v4](https://tailwindcss.com/)
 - [Lucide React](https://lucide.dev/)
-- [Sonner](https://sonner.emilkowal.ski/)
 
 ---
 
@@ -482,7 +481,6 @@ Built with ❤️ using **HyperReact** stack.
 - [HyperExpress](https://github.com/kartikk221/hyper-express) - High-performance Node.js framework
 - [TypeORM](https://typeorm.io/) - ORM for TypeScript and JavaScript
 - [Lucide React](https://lucide.dev/) - Beautiful icon library
-- [Sonner](https://sonner.emilkowal.ski/) - Toast notification library
 
 ---
 

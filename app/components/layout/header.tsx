@@ -9,15 +9,7 @@ import {
   LogOut,
   Moon,
   Sun,
-  Laptop,
-  type LucideIcon,
 } from 'lucide-react';
-
-interface NavItem {
-  label: string;
-  to: string;
-  icon: LucideIcon;
-}
 
 export function Header() {
   const { isAuthenticated, user, logout } = useAuth();
@@ -28,11 +20,6 @@ export function Header() {
     logout();
     navigate('/');
   };
-
-  const navItems: NavItem[] = [
-    { label: 'Dashboard', to: '/dashboard', icon: LayoutDashboard },
-    { label: 'Users', to: '/dashboard/users', icon: Users },
-  ];
 
   const toggleTheme = () => {
     setTheme(actualTheme === 'dark' ? 'light' : 'dark');
@@ -56,16 +43,20 @@ export function Header() {
           <nav className="flex items-center gap-2">
             {isAuthenticated && (
               <>
-                {navItems.map((item) => (
-                  <Link
-                    key={item.to}
-                    to={item.to}
-                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
-                  >
-                    <item.icon size={16} />
-                    <span className="hidden sm:inline">{item.label}</span>
-                  </Link>
-                ))}
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+                >
+                  <LayoutDashboard size={16} />
+                  <span className="hidden sm:inline">Dashboard</span>
+                </Link>
+                <Link
+                  to="/dashboard/users"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+                >
+                  <Users size={16} />
+                  <span className="hidden sm:inline">Users</span>
+                </Link>
                 <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
               </>
             )}
@@ -110,7 +101,7 @@ export function Header() {
                   </Button>
                 </Link>
                 <Link to="/auth/register">
-                  <Button variant="primary" size="sm">
+                  <Button size="sm">
                     Register
                   </Button>
                 </Link>

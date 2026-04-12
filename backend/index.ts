@@ -5,22 +5,6 @@ import { setupAuthRoutes } from './routes/auth.route';
 import { setupUsersRoutes } from './routes/users.route';
 import { env, validateEnv } from './config/env';
 
-// CORS Middleware
-function corsMiddleware(req: HyperExpress.Request, res: HyperExpress.Response, next: () => void): void {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:5173');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  
-  // Handle preflight OPTIONS request
-  if (req.method === 'OPTIONS') {
-    res.status(204).send();
-    return;
-  }
-  
-  next();
-}
-
 async function bootstrap(): Promise<void> {
   try {
     // Validate environment variables
@@ -32,10 +16,30 @@ async function bootstrap(): Promise<void> {
     // Create HyperExpress server
     const server = new HyperExpress.Server();
 
-    // Global middleware
-    server.use(corsMiddleware);
+    // CORS middleware - with next() callback
+    server.use((req, res, next) => {
+      const origin = req.headers['origin'] || '';
+      
+      // Allow all localhost ports for development
+      if (origin.match(/^http:\/\/localhost:\d+$/)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+      }
+      
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
 
-    // Request logging
+      // Handle preflight OPTIONS request - end here
+      if (req.method === 'OPTIONS') {
+        res.status(204).send();
+        return; // Don't call next()
+      }
+      
+      // Continue to next middleware/route
+      next();
+    });
+
+    // Request logging - with next()
     server.use((req, res, next) => {
       console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
       next();

@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react';
+import type { ClientLoaderFunctionArgs } from 'react-router';
+import { useFetcher, useLoaderData } from 'react-router';
+import { useState } from 'react';
 import { useAuth } from '../../hooks/use-auth';
-import { usersApi } from '../../lib/api';
+import { fetchUsers, usersApi } from '../../lib/api';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
@@ -10,50 +12,73 @@ import {
   Users,
   Search,
   Plus,
-  MoreHorizontal,
-  Trash2,
-  Edit,
   RefreshCw,
   UserCheck,
   UserX,
+  Trash2,
+  Edit,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import type { User } from '../../lib/types';
+
+// Loader function - runs before component renders (single request)
+export async function clientLoader({ request }: ClientLoaderFunctionArgs) {
+  const token = request.headers.get('Authorization')?.replace('Bearer ', '') || localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Response('Unauthorized', { status: 401 });
+  }
+
+  try {
+    const response = await fetchUsers();
+    return { users: response.users, error: null };
+  } catch (error: any) {
+    return { users: [], error: error.message || 'Failed to fetch users' };
+  }
+}
 
 export default function UsersPage() {
   const { token } = useAuth();
-  const [users, setUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+  const { users: loaderUsers, error: loaderError } = useLoaderData<typeof clientLoader>();
+  const fetcher = useFetcher();
+  
+  const [users, setUsers] = useState<User[]>(loaderUsers || []);
+  const [error, setError] = useState(loaderError || '');
   const [searchQuery, setSearchQuery] = useState('');
+  const [userToDelete, setUserToDelete] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (token) {
-      fetchUsers();
-    }
-  }, [token]);
-
-  async function fetchUsers() {
+  // Refresh users using fetcher (doesn't trigger full reload)
+  async function refreshUsers() {
     if (!token) return;
 
     try {
       const response = await usersApi.getAll(token);
       setUsers(response.users);
+      setError('');
     } catch (err: any) {
       setError(err.message || 'Failed to fetch users');
-    } finally {
-      setIsLoading(false);
     }
   }
 
-  async function handleDeleteUser(id: string) {
-    if (!confirm('Are you sure you want to delete this user?')) return;
-    if (!token) return;
+  async function handleDeleteUser() {
+    if (!userToDelete || !token) return;
+
+    if (!confirm('Are you sure you want to delete this user?')) {
+      setUserToDelete(null);
+      return;
+    }
 
     try {
-      await usersApi.delete(id, token);
-      setUsers(users.filter((u) => u.id !== id));
+      await usersApi.delete(userToDelete, token);
+      toast.success('User deleted', {
+        description: 'The user has been successfully removed.',
+      });
+      setUsers(users.filter((u) => u.id !== userToDelete));
+      setUserToDelete(null);
     } catch (err: any) {
-      alert(err.message || 'Failed to delete user');
+      toast.error('Delete failed', {
+        description: err.message || 'Failed to delete user',
+      });
     }
   }
 
@@ -64,12 +89,15 @@ export default function UsersPage() {
       user.fullName?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (isLoading) {
+  if (loaderError) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex items-center justify-center">
         <div className="text-center">
-          <RefreshCw className="w-8 h-8 animate-spin text-violet-600 mx-auto mb-4" />
-          <p className="text-gray-600 dark:text-gray-400">Loading users...</p>
+          <p className="text-red-600 dark:text-red-400 mb-4">{loaderError}</p>
+          <Button onClick={refreshUsers}>
+            <RefreshCw size={18} className="mr-2" />
+            Retry
+          </Button>
         </div>
       </div>
     );
@@ -95,7 +123,7 @@ export default function UsersPage() {
               </div>
             </div>
             <div className="flex items-center gap-3">
-              <Button variant="outline" onClick={fetchUsers}>
+              <Button variant="outline" onClick={refreshUsers}>
                 <RefreshCw size={18} className="mr-2" />
                 Refresh
               </Button>
@@ -113,8 +141,6 @@ export default function UsersPage() {
               placeholder="Search users..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              icon={<Search size={18} />}
-              iconPosition="left"
               className="pl-10"
             />
           </div>
@@ -227,7 +253,7 @@ export default function UsersPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handleDeleteUser(user.id)}
+                              onClick={() => setUserToDelete(user.id)}
                             >
                               <Trash2 size={16} className="text-red-600 dark:text-red-400" />
                             </Button>
@@ -242,6 +268,27 @@ export default function UsersPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Delete Confirmation Dialog - Simple approach */}
+      {userToDelete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setUserToDelete(null)}>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 max-w-md mx-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">Delete User</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Are you sure you want to delete this user? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <Button variant="outline" className="flex-1" onClick={() => setUserToDelete(null)}>
+                Cancel
+              </Button>
+              <Button variant="danger" className="flex-1" onClick={handleDeleteUser}>
+                <Trash2 size={16} className="mr-2" />
+                Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -11,16 +11,19 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('theme') as Theme;
-      return stored || 'system';
-    }
-    return 'system';
-  });
+  const [theme, setTheme] = useState<Theme>('system');
 
   const [actualTheme, setActualTheme] = useState<'light' | 'dark'>('light');
 
+  // Initialize theme from localStorage (runs once on mount)
+  useEffect(() => {
+    const stored = localStorage.getItem('theme') as Theme;
+    if (stored) {
+      setTheme(stored);
+    }
+  }, []);
+
+  // Update actual theme based on current theme setting
   useEffect(() => {
     const isDark =
       theme === 'dark' ||
@@ -31,6 +34,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setActualTheme(isDark ? 'dark' : 'light');
   }, [theme]);
 
+  // Sync theme class to HTML element
   useEffect(() => {
     const html = document.documentElement;
     html.classList.remove('light', 'dark');

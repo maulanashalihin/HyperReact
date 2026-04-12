@@ -12,6 +12,7 @@ import "./app.css";
 import { AuthProvider } from "./contexts/auth.context";
 import { ThemeProvider } from "./contexts/theme.context";
 import { Header } from "./components/layout/header";
+import { ToastProvider } from "./components/ui/toast";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -34,14 +35,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const theme = localStorage.getItem('theme');
+                const isDark = theme === 'dark' || 
+                  (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                document.documentElement.classList.add(isDark ? 'dark' : 'light');
+              })();
+            `,
+          }}
+        />
       </head>
       <body>
         <ThemeProvider>
           <AuthProvider>
-            <Header />
-            {children}
-            <ScrollRestoration />
-            <Scripts />
+            <ToastProvider>
+              <Header />
+              {children}
+              <ScrollRestoration />
+              <Scripts />
+            </ToastProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

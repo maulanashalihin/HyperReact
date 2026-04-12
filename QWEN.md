@@ -21,6 +21,7 @@ This project uses a **decoupled architecture** where frontend and backend run on
 | Vite | v8.0.3 | Build tool, dev server |
 | TailwindCSS | v4.2.2 | Styling |
 | TypeScript | v5.9.3 | Type safety |
+| Lucide React | v1.8.0 | Icon library |
 
 ### Backend
 | Technology | Version | Purpose |
@@ -40,15 +41,20 @@ react-spa-with-hyper-express/
 ├── app/                          # Frontend React application
 │   ├── components/
 │   │   ├── layout/
-│   │   │   └── header.tsx        # Global header with navigation
+│   │   │   └── header.tsx        # Global header with navigation & theme toggle
 │   │   └── ui/
-│   │       ├── button.tsx        # Reusable Button component
-│   │       ├── card.tsx          # Card components
-│   │       └── input.tsx         # Form Input component
+│   │       ├── button.tsx        # Custom Button (gradient variants)
+│   │       ├── input.tsx         # Input with icon support
+│   │       ├── card.tsx          # Card with Header/Content/Footer
+│   │       ├── badge.tsx         # Status badges
+│   │       ├── avatar.tsx        # User avatar with gradient fallback
+│   │       └── toast.tsx         # Custom toast notifications
 │   ├── contexts/
-│   │   └── auth.context.tsx      # Auth state provider
+│   │   ├── auth.context.tsx      # Auth state provider
+│   │   └── theme.context.tsx     # Dark/light mode provider
 │   ├── hooks/
-│   │   └── use-auth.ts           # Auth hook (exports from context)
+│   │   ├── use-auth.ts           # Auth hook (exports from context)
+│   │   └── use-toast.ts          # Toast hook (exports from toast component)
 │   ├── lib/
 │   │   ├── api.ts                # Fetch API client
 │   │   ├── types.ts              # TypeScript types
@@ -61,8 +67,8 @@ react-spa-with-hyper-express/
 │   │   └── dashboard/
 │   │       ├── _index.tsx        # Dashboard (/dashboard)
 │   │       └── users.tsx         # Users management (/dashboard/users)
-│   ├── app.css                   # TailwindCSS imports
-│   ├── root.tsx                  # Root layout with AuthProvider
+│   ├── app.css                   # TailwindCSS + custom animations
+│   ├── root.tsx                  # Root layout with providers
 │   └── routes.ts                 # Route configuration
 │
 ├── backend/                      # Backend API server
@@ -202,15 +208,35 @@ DATABASE_PATH=database.sqlite
 ### Frontend API Client (`app/lib/api.ts`)
 - Uses **native Fetch API** (no axios)
 - Request interceptor adds JWT token from localStorage
-- Response interceptor handles 401 (clears storage, redirects to login)
+- Response interceptor handles 401 only for protected routes (not auth endpoints)
+- Login/register errors are returned to component for toast display
+
+### Custom UI Components
+- **Button**: Gradient variants (primary, secondary, outline, ghost, danger), isLoading support
+- **Input**: Icon support (left position), label, error states
+- **Card**: Composed components (Card, CardHeader, CardTitle, CardContent, CardFooter)
+- **Badge**: Variants (default, success, warning, error, info)
+- **Avatar**: Gradient fallback with user initials
+- **Toast**: Custom toast notifications (bottom-right position, auto-dismiss 5s, icons)
+
+### Theme System
+- **Dark/Light mode**: Toggle via header button, persists to localStorage
+- **System preference**: Respects OS theme setting when set to 'system'
+- **Context-based**: ThemeProvider wraps entire app
+
+### Backend Middleware (HyperExpress)
+- **CORS**: Allows all localhost ports in development, configured for production origin
+- **JSON parsing**: Uses native `req.json()` method (no middleware)
+- **Error handling**: Global error middleware catches and formats errors
+- **Important**: Middleware must use `next()` callback pattern per HyperExpress docs
 
 ### Backend Body Parsing
-- Uses **native `req.json()`** method (no middleware)
+- Uses **native `req.json()`** method in route handlers (not middleware)
 - More performant than middleware approach
 - Only parses JSON when needed
 
 ### CORS
-- Backend sets CORS headers for `http://localhost:5173`
+- Backend allows all `http://localhost:*` ports in development
 - Handles preflight OPTIONS requests
 - Required for frontend-backend communication
 
@@ -243,32 +269,80 @@ DATABASE_PATH=database.sqlite
 1. Add route handler in `backend/routes/*.route.ts`
 2. Add service method in `backend/services/*.service.ts` if needed
 3. Update frontend API client in `app/lib/api.ts`
+4. Add toast notifications for success/error states
 
-### Add a New Page
-1. Create component in `app/routes/`
-2. Add route config in `app/routes.ts`
-3. Add navigation link in `app/components/layout/header.tsx`
+### Add a New UI Component
+1. Create component in `app/components/ui/`
+2. Use TailwindCSS for styling with dark mode support (`dark:` variants)
+3. Export from component file
+4. Import in pages as needed
+
+### Add Toast Notifications
+```tsx
+import { useToast } from '@/components/ui/toast';
+
+export default function MyComponent() {
+  const { success, error } = useToast();
+  
+  const handleSubmit = async () => {
+    try {
+      await apiCall();
+      success({ title: 'Success!', description: 'Operation completed' });
+    } catch (err) {
+      error({ title: 'Failed', description: err.message });
+    }
+  };
+}
+```
 
 ### Database Changes
 1. Modify entity in `backend/entities/user.entity.ts`
 2. Create migration (TypeORM migrations)
 3. Run migration
+4. Or use `npm run refresh` to reset database (development only)
+
+### Theme/Dark Mode
+- Toggle via header button or programmatically via `useTheme()` hook
+- Theme persists to localStorage
+- Respects system preference when set to 'system'
 
 ---
 
 ## Troubleshooting
 
+### Login/Register Not Working (Infinite Loading)
+- **Check backend is running**: `curl http://localhost:3001/health`
+- **Check CORS**: Backend must allow frontend origin (all localhost ports allowed in dev)
+- **Check password hashing**: bcrypt compare must work with stored hash
+- **Test with curl**: `curl -X POST http://localhost:3001/api/auth/login -H "Content-Type: application/json" -d '{"username":"test","password":"test"}'`
+
+### Toast Notifications Not Showing
+- **Ensure ToastProvider wraps app**: Check `app/root.tsx` has `<ToastProvider>`
+- **Import useToast from correct path**: `import { useToast } from '@/components/ui/toast'`
+- **Hard refresh browser**: `Cmd+Shift+R` (Mac) or `Ctrl+Shift+R` (Windows)
+
+### Backend Changes Not Reflecting
+- **Backend has no hot reload**: Must restart manually after code changes
+- **Kill and restart**: `lsof -ti:3001 | xargs kill -9` then `cd backend && npx tsx index.ts`
+- **Or use npm script**: `npm run dev:backend`
+
+### Database Reset
+- **Delete and re-migrate**: `npm run refresh` (deletes `backend/database.sqlite`)
+- **Restart backend**: TypeORM auto-creates tables on startup (`synchronize: true`)
+
 ### CORS Errors
 - Ensure backend CORS middleware allows frontend origin
 - Check preflight OPTIONS handling
+- Verify frontend is running on allowed port (all localhost ports allowed in dev)
 
 ### JWT Issues
 - Verify `JWT_SECRET` is set in backend `.env`
 - Check token format: `Bearer <token>`
 
-### Database Errors
-- Delete `backend/database.sqlite` to reset
-- Check TypeORM `synchronize` setting
+### Double/Middleware Issues (HyperExpress)
+- Middleware must use `next()` callback pattern
+- For OPTIONS requests, end response without calling `next()`
+- See `backend/index.ts` for correct CORS middleware pattern
 
 ---
 

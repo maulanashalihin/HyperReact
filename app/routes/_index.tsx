@@ -22,7 +22,7 @@ export default function Home() {
     {
       icon: Smartphone,
       title: 'Modern Frontend',
-      description: 'React Router v7 with TailwindCSS for beautiful, responsive user interfaces.',
+      description: 'React Router v7 with TailwindCSS and custom components for beautiful UIs.',
       gradient: 'from-cyan-500 to-blue-500',
     },
   ];
@@ -31,9 +31,6 @@ export default function Home() {
     <div className="min-h-screen">
       {/* Hero Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-violet-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-900 dark:to-violet-950">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 bg-grid-gray-200/50 dark:bg-grid-gray-800/50 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.5))]" />
-        
         <div className="container mx-auto px-4 py-24 relative">
           <div className="text-center max-w-4xl mx-auto">
             {/* Badge */}

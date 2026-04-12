@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router';
+import type { ClientLoaderFunctionArgs } from 'react-router';
+import { Link, useLoaderData } from 'react-router';
+import { useState } from 'react';
 import { useAuth } from '../../hooks/use-auth';
-import { usersApi } from '../../lib/api';
-import { Card, CardContent, CardHeader } from '../../components/ui/card';
+import { fetchUsers } from '../../lib/api';
+import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Avatar } from '../../components/ui/avatar';
 import { Badge } from '../../components/ui/badge';
@@ -19,32 +20,39 @@ interface Stats {
   activeUsers: number;
 }
 
+interface LoaderData {
+  stats: Stats | null;
+  error: string | null;
+}
+
+// Loader function - runs before component renders (single request)
+export async function clientLoader({ request }: ClientLoaderFunctionArgs) {
+  const token = request.headers.get('Authorization')?.replace('Bearer ', '') || localStorage.getItem('token');
+  
+  if (!token) {
+    throw new Response('Unauthorized', { status: 401 });
+  }
+
+  try {
+    const response = await fetchUsers();
+    const users = response.users;
+    const stats = {
+      totalUsers: users.length,
+      activeUsers: users.filter((u: any) => u.isActive).length,
+    };
+    return { stats, error: null };
+  } catch (error: any) {
+    return { 
+      stats: null, 
+      error: error.message || 'Failed to fetch stats' 
+    };
+  }
+}
+
 export default function Dashboard() {
-  const { user, token } = useAuth();
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    async function fetchStats() {
-      if (!token) return;
-
-      try {
-        const response = await usersApi.getAll(token);
-        const users = response.users;
-        setStats({
-          totalUsers: users.length,
-          activeUsers: users.filter((u: any) => u.isActive).length,
-        });
-      } catch (err: any) {
-        setError(err.message || 'Failed to fetch stats');
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchStats();
-  }, [token]);
+  const { user } = useAuth();
+  const { stats, error } = useLoaderData<typeof clientLoader>();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const statCards = [
     {
@@ -111,11 +119,7 @@ export default function Dashboard() {
                 </div>
                 <div className="space-y-1">
                   <p className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {isLoading ? (
-                      <span className="animate-pulse">...</span>
-                    ) : (
-                      stat.value
-                    )}
+                    {stat.value}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     {stat.title}
@@ -147,7 +151,7 @@ export default function Dashboard() {
               <Link to="/dashboard/users">
                 <Button size="lg" className="group">
                   Manage Users
-                  <ArrowRight size={18} className="ml-2 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight size={18} className="mr-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
               <Button variant="outline" size="lg">

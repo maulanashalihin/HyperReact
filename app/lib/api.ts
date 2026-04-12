@@ -27,14 +27,15 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: { message: 'Request failed' } }));
-    
-    if (response.status === 401) {
+
+    // Only redirect for protected routes (not auth endpoints)
+    if (response.status === 401 && !endpoint.includes('/api/auth/')) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/auth/login';
       throw new Error('Unauthorized');
     }
-    
+
     throw new Error(error.error?.message || 'Request failed');
   }
 
@@ -57,7 +58,7 @@ export const authApi = {
     request<{ user: any }>('/api/auth/me', { token }),
 };
 
-// Users API
+// Users API - Component usage (with token parameter)
 export const usersApi = {
   getAll: (token: string) =>
     request<{ users: any[] }>('/api/users', { token }),
@@ -75,3 +76,9 @@ export const usersApi = {
       token,
     }),
 };
+
+// Users API - Loader usage (gets token from localStorage)
+export async function fetchUsers(): Promise<{ users: any[] }> {
+  const token = localStorage.getItem('token');
+  return request<{ users: any[] }>('/api/users', { token });
+}

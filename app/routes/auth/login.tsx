@@ -1,30 +1,37 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useAuth } from '../../hooks/use-auth';
+import { useToast } from '../../components/ui/toast';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../../components/ui/card';
-import { Lock, Mail, ArrowRight, BadgeCheck } from 'lucide-react';
+import { Lock, Mail, ArrowRight } from 'lucide-react';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
 
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { success, error } = useToast();
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    setError('');
     setIsLoading(true);
 
     try {
       await login(username, password);
+      success({
+        title: 'Welcome back!',
+        description: `Logged in as ${username}`,
+      });
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Login failed');
+      error({
+        title: 'Login failed',
+        description: err.message || 'Invalid username or password',
+      });
     } finally {
       setIsLoading(false);
     }
@@ -56,15 +63,6 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-5">
-              {error && (
-                <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm flex items-center gap-2">
-                  <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
-                  {error}
-                </div>
-              )}
-
               <Input
                 label="Username"
                 type="text"
@@ -87,45 +85,16 @@ export default function Login() {
                 autoComplete="current-password"
               />
 
-              <div className="flex items-center justify-between">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="w-4 h-4 rounded border-gray-300 text-violet-600 focus:ring-violet-500"
-                  />
-                  <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Remember me</span>
-                </label>
-                <a href="#" className="text-sm font-medium text-violet-600 hover:text-violet-500 dark:text-violet-400">
-                  Forgot password?
-                </a>
-              </div>
-
               <Button
                 type="submit"
                 className="w-full"
                 size="lg"
                 isLoading={isLoading}
               >
-                Sign in
+                {isLoading ? 'Signing in...' : 'Sign in'}
                 {!isLoading && <ArrowRight size={18} className="ml-2" />}
               </Button>
             </form>
-
-            {/* Divider */}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300 dark:border-gray-600" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-4 bg-white dark:bg-gray-900 text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
-            {/* Social Login */}
-            <Button variant="outline" className="w-full" size="lg">
-              <BadgeCheck size={20} className="mr-2" />
-              Sign in with Provider
-            </Button>
           </CardContent>
           <CardFooter className="flex flex-col space-y-2">
             <p className="text-center text-sm text-gray-600 dark:text-gray-400">

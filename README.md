@@ -20,7 +20,7 @@ A production-ready boilerplate for building React applications with a **separate
 - **🔄 React Router v7** - Modern routing with loaders and data mutations
 - **🔐 JWT Authentication** - Ready-to-use auth system with bcrypt password hashing
 - **📦 TypeORM + SQLite** - Type-safe database with zero configuration
-- **🎨 Beautiful UI** - TailwindCSS + shadcn/ui components
+- **🎨 Beautiful UI** - TailwindCSS + custom UI components (Avatar, Badge, Button, Card, Input)
 - **🐳 Docker-Ready** - Deploy anywhere with Docker
 - **📱 Responsive Design** - Mobile-first, production-ready components
 
@@ -186,9 +186,16 @@ npm run typecheck
 | Vite | v8.0.3 | Build tool, dev server |
 | TailwindCSS | v4.2.2 | Utility-first CSS |
 | TypeScript | v5.9.3 | Type safety |
-| shadcn/ui | - | Beautiful UI components |
 | Lucide React | v1.8.0 | Icon library |
 | Sonner | v2.0.7 | Toast notifications |
+
+#### Custom UI Components
+
+- **Avatar** - User avatar with gradient fallback and initials
+- **Badge** - Status badges with variants (default, success, warning, error, info)
+- **Button** - Gradient variants with isLoading support
+- **Card** - Composed components (Card, CardHeader, CardTitle, CardContent, CardFooter)
+- **Input** - Form input with icon support and error states
 
 ### Backend
 
@@ -221,13 +228,14 @@ hyperreact-boilerplate/
 ├── app/                          # Frontend React application
 │   ├── components/
 │   │   ├── layout/
-│   │   │   └── header.tsx        # Global header with navigation
-│   │   └── ui/                   # shadcn/ui components
+│   │   │   └── header.tsx        # Global header with navigation & theme toggle
+│   │   └── ui/                   # Custom UI components
 │   │       ├── avatar.tsx
 │   │       ├── badge.tsx
 │   │       ├── button.tsx
 │   │       ├── card.tsx
-│   │       └── input.tsx
+│   │       ├── input.tsx
+│   │       └── toast.tsx
 │   ├── contexts/
 │   │   ├── auth.context.tsx      # Auth state provider
 │   │   └── theme.context.tsx     # Dark/light theme provider
@@ -449,7 +457,8 @@ Set production environment variables:
 - [HyperExpress](https://github.com/kartikk221/hyper-express)
 - [TypeORM](https://typeorm.io/)
 - [TailwindCSS v4](https://tailwindcss.com/)
-- [shadcn/ui](https://ui.shadcn.com/)
+- [Lucide React](https://lucide.dev/)
+- [Sonner](https://sonner.emilkowal.ski/)
 
 ---
 
@@ -472,7 +481,8 @@ Built with ❤️ using **HyperReact** stack.
 - [React Router](https://reactrouter.com/) - Modern web framework for React
 - [HyperExpress](https://github.com/kartikk221/hyper-express) - High-performance Node.js framework
 - [TypeORM](https://typeorm.io/) - ORM for TypeScript and JavaScript
-- [shadcn/ui](https://ui.shadcn.com/) - Beautiful UI components
+- [Lucide React](https://lucide.dev/) - Beautiful icon library
+- [Sonner](https://sonner.emilkowal.ski/) - Toast notification library
 
 ---
 

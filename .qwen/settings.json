@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(ui.shadcn.com)",
+      "WebFetch(lucide.dev)"
+    ]
+  },
+  "$version": 3
+}

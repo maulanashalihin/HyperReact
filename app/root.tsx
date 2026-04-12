@@ -9,6 +9,9 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { AuthProvider } from "./contexts/auth.context";
+import { ThemeProvider } from "./contexts/theme.context";
+import { Header } from "./components/layout/header";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -25,7 +28,7 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,9 +36,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
-        <ScrollRestoration />
-        <Scripts />
+        <ThemeProvider>
+          <AuthProvider>
+            <Header />
+            {children}
+            <ScrollRestoration />
+            <Scripts />
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
@@ -62,14 +70,27 @@ export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
-      {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
-          <code>{stack}</code>
-        </pre>
-      )}
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950">
+      <div className="text-center max-w-md px-4">
+        <div className="mx-auto h-20 w-20 rounded-2xl bg-gradient-to-br from-red-500 to-pink-500 flex items-center justify-center shadow-lg mb-6">
+          <span className="text-4xl">!</span>
+        </div>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          {message}
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 mb-6">{details}</p>
+        <a
+          href="/"
+          className="inline-flex items-center px-4 py-2 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-medium hover:from-violet-700 hover:to-indigo-700 transition-all shadow-lg shadow-violet-500/25"
+        >
+          Go Home
+        </a>
+        {stack && (
+          <pre className="w-full mt-6 p-4 overflow-x-auto bg-gray-100 dark:bg-gray-900 rounded-xl text-left text-sm text-gray-600 dark:text-gray-400">
+            <code>{stack}</code>
+          </pre>
+        )}
+      </div>
     </main>
   );
 }

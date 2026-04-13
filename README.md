@@ -18,8 +18,13 @@ A production-ready boilerplate for building React applications with a **separate
 - **⚡️ Decoupled Architecture** - Frontend and backend run independently, deploy separately
 - **🚀 High-Performance Backend** - HyperExpress (~7.5x faster than Express.js)
 - **🔄 React Router v7** - Modern routing with loaders and data mutations
-- **🔐 JWT Authentication** - Ready-to-use auth system with bcrypt password hashing
-- **📦 TypeORM + SQLite** - Type-safe database with zero configuration
+- **🔐 Complete Authentication** - JWT auth with password reset, email verification, and role-based access control
+- **📧 Email System** - Resend integration with terminal simulation mode for development
+- **👥 User Management** - 2-tier roles (user | admin) with admin dashboard
+- **⚙️ User Settings** - Profile management, password change, account deletion
+- **📦 TypeORM + SQLite** - Type-safe database with production-ready migrations
+- **🔒 Zod Validation** - Type-safe form validation on frontend and backend
+- **🧪 Test Suite** - 18 tests (12 backend + 6 frontend) with vitest
 - **🎨 Beautiful UI** - TailwindCSS + custom UI components (Avatar, Badge, Button, Card, Input, Toast)
 - **🐳 Docker-Ready** - Deploy anywhere with Docker
 - **📱 Responsive Design** - Mobile-first, production-ready components
@@ -48,9 +53,10 @@ A production-ready boilerplate for building React applications with a **separate
 
 - 🚀 **Startup MVPs** - Launch in days, not weeks
 - 📊 **Internal Tools** - Dashboards, admin panels, CRUD apps
-- 💼 **SaaS Products** - Multi-user apps with separate API
+- 💼 **SaaS Products** - Multi-user apps with separate API, user management, subscriptions
 - 👨‍💻 **Freelance Projects** - Reusable template for client work
 - 💬 **Real-time Apps** - Chat, notifications, live updates (WebSocket/SSE supported via HyperExpress)
+- 🎓 **Learning Projects** - Production-ready patterns for auth, email, testing, migrations
 
 ### When NOT to Use
 
@@ -263,15 +269,29 @@ hyperreact-boilerplate/
 │   ├── lib/
 │   │   ├── api.ts                # Fetch API client
 │   │   ├── types.ts              # TypeScript types
+│   │   ├── validation.ts         # Zod validation schemas (shared)
 │   │   └── utils.ts              # Utility functions
 │   ├── routes/
-│   │   ├── _index.tsx            # Home page (/)
+│   │   ├── _index.tsx            # Home page (/) - redirects to dashboard/login
 │   │   ├── auth/
 │   │   │   ├── login.tsx         # Login page (/auth/login)
-│   │   │   └── register.tsx      # Register page (/auth/register)
-│   │   └── dashboard/
-│   │       ├── _index.tsx        # Dashboard (/dashboard)
-│   │       └── users.tsx         # Users management (/dashboard/users)
+│   │   │   ├── register.tsx      # Register page (/auth/register)
+│   │   │   ├── forgot-password.tsx  # Password reset request
+│   │   │   ├── reset-password.tsx   # Password reset form
+│   │   │   └── verify-email.tsx     # Email verification page
+│   │   ├── dashboard/
+│   │   │   ├── _index.tsx        # Dashboard (/dashboard)
+│   │   │   └── users.tsx         # Users management (/dashboard/users)
+│   │   ├── settings/
+│   │   │   ├── profile.tsx       # Profile settings (/settings/profile)
+│   │   │   └── security.tsx      # Password change (/settings/security)
+│   │   └── admin/
+│   │       └── users.tsx         # Admin user management (/admin/users)
+│   ├── tests/                    # Frontend tests (vitest)
+│   │   ├── auth.test.tsx
+│   │   ├── settings.test.tsx
+│   │   ├── routing.test.tsx
+│   │   └── setup.ts
 │   ├── app.css                   # Global styles
 │   ├── root.tsx                  # Root layout
 │   └── routes.ts                 # Route configuration
@@ -284,16 +304,26 @@ hyperreact-boilerplate/
 │   │   ├── login.dto.ts
 │   │   └── register.dto.ts
 │   ├── entities/
-│   │   └── user.entity.ts        # User entity
+│   │   └── user.entity.ts        # User entity (role, email verification)
 │   ├── middleware/
 │   │   ├── auth.middleware.ts    # JWT validation
+│   │   ├── role.middleware.ts    # Role-based access control
 │   │   └── error.middleware.ts   # Error handler
 │   ├── routes/
 │   │   ├── auth.route.ts         # /api/auth/* endpoints
-│   │   └── users.route.ts        # /api/users/* endpoints
+│   │   ├── users.route.ts        # /api/users/* endpoints
+│   │   └── admin.route.ts        # /api/admin/* endpoints (admin only)
 │   ├── services/
 │   │   ├── auth.service.ts       # Auth business logic
-│   │   └── users.service.ts      # Users CRUD logic
+│   │   ├── users.service.ts      # Users CRUD logic
+│   │   └── email.service.ts      # Email sending (Resend + simulation)
+│   ├── validators/
+│   │   └── auth.validator.ts     # Zod schemas for auth
+│   ├── tests/                    # Backend tests (vitest)
+│   │   ├── auth.test.ts
+│   │   ├── users.test.ts
+│   │   ├── email.test.ts
+│   │   └── middleware.test.ts
 │   ├── migrations/               # TypeORM migrations
 │   ├── .env                      # Backend environment
 │   ├── index.ts                  # HyperExpress entry point
@@ -305,6 +335,7 @@ hyperreact-boilerplate/
 ├── docker-compose.yml
 ├── Dockerfile
 ├── package.json
+├── vitest.workspace.ts           # Vitest workspace config
 └── tsconfig.json
 ```
 
@@ -318,6 +349,10 @@ hyperreact-boilerplate/
 |--------|----------|-------------|
 | POST | `/api/auth/register` | Register new user |
 | POST | `/api/auth/login` | Login user |
+| POST | `/api/auth/forgot-password` | Request password reset email |
+| POST | `/api/auth/reset-password` | Reset password with token |
+| POST | `/api/auth/verify-email` | Verify email with token |
+| POST | `/api/auth/resend-verification` | Resend verification email |
 | GET | `/api/auth/me` | Get current user (protected) |
 
 ### Users (Protected - requires JWT)
@@ -326,8 +361,17 @@ hyperreact-boilerplate/
 |--------|----------|-------------|
 | GET | `/api/users` | Get all users |
 | GET | `/api/users/:id` | Get user by ID |
-| PUT | `/api/users/:id` | Update user |
-| DELETE | `/api/users/:id` | Delete user |
+| PUT | `/api/users/:id` | Update user (profile, email) |
+| DELETE | `/api/users/:id` | Delete user account |
+| POST | `/api/users/change-password` | Change password |
+
+### Admin (Protected - requires admin role)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/admin/users` | Get all users (admin only) |
+| PATCH | `/api/admin/users/:id/role` | Change user role (admin only) |
+| DELETE | `/api/admin/users/:id` | Delete user (admin only) |
 
 ### Utility
 
@@ -340,11 +384,29 @@ hyperreact-boilerplate/
 ## 🔐 Authentication Flow
 
 1. **Register**: `POST /api/auth/register` → returns `{ user, token }`
-2. **Login**: `POST /api/auth/login` → returns `{ user, token }`
-3. **Token Storage**: Frontend stores token in `localStorage`
-4. **Protected Requests**: Token sent via `Authorization: Bearer <token>` header
-5. **Token Validation**: Backend validates JWT using middleware
-6. **Auto-redirect**: Frontend redirects to `/auth/login` on 401
+   - Email verification token sent (via email or terminal simulation)
+   - User created with `role: 'user'` by default
+2. **Verify Email**: `POST /api/auth/verify-email` with token → sets `emailVerified: true`
+3. **Login**: `POST /api/auth/login` → returns `{ user, token }`
+   - Token includes `userId`, `username`, `email`, `role`
+4. **Token Storage**: Frontend stores token in `localStorage`
+5. **Protected Requests**: Token sent via `Authorization: Bearer <token>` header
+6. **Token Validation**: Backend validates JWT using auth middleware
+7. **Role-Based Access**: Admin routes require `role: 'admin'` in token
+8. **Auto-redirect**: Frontend redirects to `/auth/login` on 401/403
+
+### Password Reset Flow
+
+1. **Request Reset**: `POST /api/auth/forgot-password` with email
+   - Reset token sent via email (expires in 1 hour)
+2. **Reset Password**: `POST /api/auth/reset-password` with token + new password
+3. **Login**: User can now login with new password
+
+### Email Verification Flow
+
+1. **Register**: Verification token sent automatically
+2. **Verify**: `POST /api/auth/verify-email` with token from email
+3. **Resend**: `POST /api/auth/resend-verification` if email not received (rate-limited: 3/hour)
 
 ---
 
@@ -364,7 +426,10 @@ NODE_ENV=development
 JWT_SECRET=your-secret-key-change-in-production
 JWT_EXPIRES_IN=7d
 DATABASE_PATH=database.sqlite
+RESEND_API_KEY=your-resend-api-key  # Optional - omit for terminal simulation mode
 ```
+
+**Email Simulation Mode**: If `RESEND_API_KEY` is not set, emails are displayed in the terminal with nice formatting instead of being sent. Perfect for development!
 
 ---
 
@@ -428,7 +493,9 @@ Set production environment variables:
 
 1. Add route handler in `backend/routes/*.route.ts`
 2. Add service method in `backend/services/*.service.ts` if needed
-3. Update frontend API client in `app/lib/api.ts`
+3. Add Zod validator in `backend/validators/*.ts` if needed
+4. Update frontend API client in `app/lib/api.ts`
+5. Add test in `backend/tests/*.test.ts`
 
 ### Add a New Page with Data Loading
 
@@ -437,12 +504,42 @@ Set production environment variables:
 3. Use `useLoaderData()` to access data in component
 4. Add route config in `app/routes.ts`
 5. Add navigation link in `app/components/layout/header.tsx`
+6. Add test in `app/tests/*.test.tsx`
 
 ### Database Changes
 
-1. Modify entity in `backend/entities/user.entity.ts`
-2. Create migration (TypeORM migrations)
-3. Run migration
+1. Modify entity in `backend/entities/*.entity.ts`
+2. Generate migration: `npm run migration:generate -- -n MigrationName`
+3. Run migration: `npm run migration:run`
+4. Test rollback: `npm run migration:revert`
+
+### Add Zod Validation
+
+1. Add schema in `backend/validators/*.ts` or `app/lib/validation.ts`
+2. Use `.safeParse()` in route handlers
+3. Return 400 with `{ error, field }` on validation failure
+
+### Add Role-Based Access
+
+1. Import `requireRole` middleware from `backend/middleware/role.middleware.ts`
+2. Apply to route: `router.get('/admin', requireRole(['admin']), handler)`
+3. Frontend: Check `user.role` from auth context to show/hide admin links
+
+### Test Your Code
+
+```bash
+# Run all tests
+npm test
+
+# Run backend tests only
+npm run test:backend
+
+# Run frontend tests only
+npm run test:frontend
+
+# Run with coverage
+npm run test:coverage
+```
 
 ---
 
@@ -462,21 +559,61 @@ Set production environment variables:
 
 - Verify `JWT_SECRET` is set in backend `.env`
 - Check token format: `Authorization: Bearer <token>`
+- Token includes: `userId`, `username`, `email`, `role`
 
 ### Database Errors
 
-- Delete `backend/database.sqlite` to reset
-- Check TypeORM `synchronize` setting in `backend/config/database.ts`
+- Delete `backend/database.sqlite` to reset (development only)
+- Run migrations: `npm run migration:run`
+- Check `synchronize: false` in `backend/config/database.ts` (production-safe)
+
+### Email Not Sending
+
+- **Development**: Check terminal for simulation output (emails shown in console)
+- **Production**: Set `RESEND_API_KEY` in `backend/.env`
+- **Verification**: Check Resend dashboard for sent emails
+
+### Role-Based Access Issues
+
+- Verify user has `role: 'admin'` in database
+- Login again after role change (JWT must include new role)
+- Check `requireRole(['admin'])` middleware is applied to route
+
+### Tests Failing
+
+- Backend tests use isolated `test.sqlite` database
+- Frontend tests mock API calls (no backend needed)
+- Run `npm run test:backend` and `npm run test:frontend` separately to isolate issues
+
+### TypeORM Migration Errors
+
+- Ensure `synchronize: false` in production
+- Run migrations in order: `npm run migration:run`
+- Revert last migration: `npm run migration:revert`
+- Generate new migration after entity changes: `npm run migration:generate -- -n MigrationName`
 
 ---
 
 ## 📖 Documentation
 
-- [React Router v7](https://reactrouter.com/)
-- [HyperExpress](https://github.com/kartikk221/hyper-express)
-- [TypeORM](https://typeorm.io/)
-- [TailwindCSS v4](https://tailwindcss.com/)
-- [Lucide React](https://lucide.dev/)
+### Core Technologies
+
+- [React Router v7](https://reactrouter.com/) - Modern routing with loaders and mutations
+- [HyperExpress](https://github.com/kartikk221/hyper-express) - High-performance Node.js framework
+- [TypeORM](https://typeorm.io/) - ORM with migrations support
+- [TailwindCSS v4](https://tailwindcss.com/) - Utility-first CSS framework
+- [Lucide React](https://lucide.dev/) - Icon library
+- [Zod](https://zod.dev/) - TypeScript-first validation
+- [vitest](https://vitest.dev/) - Fast unit test framework
+- [Resend](https://resend.com/) - Email API (with simulation mode)
+
+### Features Documentation
+
+- **Authentication**: JWT-based with password reset and email verification
+- **Authorization**: Role-based access control (user | admin)
+- **Email**: Resend integration with terminal simulation for development
+- **Database**: TypeORM with SQLite and production-ready migrations
+- **Testing**: vitest workspace with backend (12 tests) + frontend (6 tests)
 
 ---
 

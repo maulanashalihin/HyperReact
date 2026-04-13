@@ -149,19 +149,24 @@ Perfect for side projects and startups! 🎉
 
 ### Prerequisites
 
-- Node.js 18+ 
+- Node.js 18+
 - npm, pnpm, or bun
 
-### Installation
+### First Time Setup
 
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/hyperreact-boilerplate.git
 cd hyperreact-boilerplate
 
-# Install dependencies
-npm install
+# Install dependencies and run migrations (one-time setup)
+npm run setup
 ```
+
+The `setup` script will:
+1. Install all dependencies
+2. Run database migrations to create tables
+3. Display a success message
 
 ### Development
 
@@ -185,17 +190,30 @@ npm run dev:frontend
 npm run dev:backend
 ```
 
-### Build for Production
+### Database Reset (Development)
+
+Reset database and re-run all migrations:
 
 ```bash
-# Build frontend (outputs to build/client/)
-npm run build
+npm run refresh
 ```
+
+This will:
+1. Delete the current database
+2. Run all migrations to recreate tables
+3. Display a success message
 
 ### Type Checking
 
 ```bash
 npm run typecheck
+```
+
+### Build for Production
+
+```bash
+# Build frontend (outputs to build/client/)
+npm run build
 ```
 
 ---
@@ -563,8 +581,9 @@ npm run test:coverage
 
 ### Database Errors
 
-- Delete `backend/database.sqlite` to reset (development only)
-- Run migrations: `npm run migration:run`
+- **First time setup**: Run `npm run setup` to install dependencies and migrate database
+- **Reset database**: Run `npm run refresh` to delete and recreate database (development only)
+- **Manual migration**: Run `npm run migration:run` if tables are missing
 - Check `synchronize: false` in `backend/config/database.ts` (production-safe)
 
 ### Email Not Sending

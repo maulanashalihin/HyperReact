@@ -1,0 +1,52 @@
+# Task 9: Non-Admin Blocked from Admin Route
+
+## Test: Regular User (role='user') Accessing Admin Route
+
+### Step 1: Login as regular user
+```bash
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","password":"password123"}'
+```
+
+### Response:
+```json
+{
+  "message": "Login successful",
+  "user": {
+    "id": "ee99adb1-0799-4f05-b0b9-0d6f8ad92fc2",
+    "username": "testuser",
+    "email": "test@example.com",
+    "fullName": null
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+### JWT Payload (decoded):
+```json
+{
+  "userId": "ee99adb1-0799-4f05-b0b9-0d6f8ad92fc2",
+  "username": "testuser",
+  "email": "test@example.com",
+  "role": "user",
+  "iat": 1776057295,
+  "exp": 1776662095
+}
+```
+
+### Step 2: Access admin route with user token
+```bash
+curl -X GET http://localhost:3001/api/admin/users \
+  -H "Authorization: Bearer <user-token>"
+```
+
+### Response (403 Forbidden):
+```json
+{
+  "error": "Access denied: Insufficient permissions"
+}
+```
+
+## Result: ✅ PASS
+Non-admin user is correctly blocked from accessing admin-only routes with 403 Forbidden.

@@ -1,13 +1,17 @@
 import type { Request, Response } from 'hyper-express';
 
+interface HttpError extends Error {
+  status?: number;
+}
+
 export function errorMiddleware(
-  error: Error,
+  error: HttpError,
   req: Request,
   res: Response
 ): void {
   console.error('Error:', error);
 
-  const status = (error as any).status || 500;
+  const status = error.status || 500;
   const message = error.message || 'Internal Server Error';
 
   res.status(status).json({

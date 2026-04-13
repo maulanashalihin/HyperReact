@@ -1,0 +1,5 @@
+Test: Invalid Email Format
+Request: POST /api/auth/register
+Body: {"username":"testuser","email":"invalid-email","password":"password123"}
+Response: {"error":"Invalid email format","field":"email"}
+Status: 400

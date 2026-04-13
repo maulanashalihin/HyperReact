@@ -23,12 +23,14 @@ export default function Login() {
     try {
       await login(username, password);
       success({
+        type: 'success',
         title: 'Welcome back!',
         description: `Logged in as ${username}`,
       });
       navigate('/dashboard');
     } catch (err: any) {
       error({
+        type: 'error',
         title: 'Login failed',
         description: err.message || 'Invalid username or password',
       });

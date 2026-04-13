@@ -1,0 +1,17 @@
+=== User Entity Role Field ===
+  role: 'user' | 'admin';
+  createdAt: Date;
+  updatedAt: Date;
+}
+--
+    role: {
+      type: 'varchar',
+      default: 'user',
+    },
+
+=== Migration File ===
+total 16
+drwxr-xr-x@  4 maulanashalihin  staff   128 Apr 13 12:23 .
+drwxr-xr-x@ 15 maulanashalihin  staff   480 Apr 13 12:25 ..
+-rw-r--r--@  1 maulanashalihin  staff   999 Apr 13 12:05 1776053112368-InitialSchema.js
+-rw-r--r--@  1 maulanashalihin  staff  2307 Apr 13 12:24 1776054193811-AddRoleToUsers.js

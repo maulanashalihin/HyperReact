@@ -1,0 +1,68 @@
+# Task 9: Admin Access to Admin Route
+
+## Test: Admin User (role='admin') Accessing Admin Route
+
+### Step 1: Update user role to admin
+```bash
+sqlite3 database.sqlite "UPDATE users SET role='admin' WHERE email='test@example.com'"
+```
+
+### Step 2: Login as admin user
+```bash
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","password":"password123"}'
+```
+
+### Response:
+```json
+{
+  "message": "Login successful",
+  "user": {
+    "id": "ee99adb1-0799-4f05-b0b9-0d6f8ad92fc2",
+    "username": "testuser",
+    "email": "test@example.com",
+    "fullName": null
+  },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+}
+```
+
+### JWT Payload (decoded):
+```json
+{
+  "userId": "ee99adb1-0799-4f05-b0b9-0d6f8ad92fc2",
+  "username": "testuser",
+  "email": "test@example.com",
+  "role": "admin",
+  "iat": 1776057308,
+  "exp": 1776662108
+}
+```
+
+### Step 3: Access admin route with admin token
+```bash
+curl -X GET http://localhost:3001/api/admin/users \
+  -H "Authorization: Bearer <admin-token>"
+```
+
+### Response (200 OK):
+```json
+{
+  "users": [
+    {
+      "id": "ee99adb1-0799-4f05-b0b9-0d6f8ad92fc2",
+      "username": "testuser",
+      "email": "test@example.com",
+      "fullName": null,
+      "isActive": true,
+      "createdAt": "2026-04-13T05:13:06.000Z",
+      "updatedAt": "2026-04-13T05:13:06.000Z"
+    },
+    ...
+  ]
+}
+```
+
+## Result: ✅ PASS
+Admin user can successfully access admin-only routes with 200 OK and receives the expected data.

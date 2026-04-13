@@ -1,0 +1,15 @@
+
+> test
+> vitest run
+
+
+ RUN  v4.1.4 /Volumes/data/Project/HyperReact
+
+Global setup: Test database cleaned
+
+ Test Files  4 passed (4)
+      Tests  12 passed (12)
+   Start at  13:56:46
+   Duration  1.71s (transform 25ms, setup 69ms, import 48ms, tests 1.52s, environment 8ms)
+
+Global teardown: Test database removed

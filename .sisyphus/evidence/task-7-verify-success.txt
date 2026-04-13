@@ -1,0 +1,25 @@
+Task 7: Email Verification Flow - Success Evidence
+===================================================
+
+Test 1: Email Verification Success
+-----------------------------------
+
+1. Register new user:
+curl -X POST http://localhost:3001/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser11","email":"test11@example.com","password":"password123"}'
+
+Response: {"message":"Registration successful","user":{"id":"2d86766a-ff37-4556-9447-1b94a6b35851",...}}
+
+2. Verify email with token from database:
+curl -X POST http://localhost:3001/api/auth/verify-email \
+  -H "Content-Type: application/json" \
+  -d '{"token":"98e172d964df29cf29e73e765f2f97aedbfddb411a33451293be65894a182d5d"}'
+
+Response: {"message":"Email verified successfully"}
+
+3. Verify emailVerified field is true:
+sqlite3 backend/database.sqlite "SELECT emailVerified FROM users WHERE email='test11@example.com'"
+Result: 1 (true)
+
+✓ Email verification flow working correctly

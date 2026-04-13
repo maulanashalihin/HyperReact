@@ -1,0 +1,34 @@
+Task 7: Email Verification Flow - Rate Limit Evidence
+======================================================
+
+Test 2: Rate Limiting on Resend Verification
+---------------------------------------------
+
+Testing rate limit: max 3 verification emails per hour per user
+
+Request 1:
+curl -X POST http://localhost:3001/api/auth/resend-verification \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test10@example.com"}'
+Response: {"message":"Verification email sent successfully"}
+
+Request 2:
+curl -X POST http://localhost:3001/api/auth/resend-verification \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test10@example.com"}'
+Response: {"message":"Verification email sent successfully"}
+
+Request 3:
+curl -X POST http://localhost:3001/api/auth/resend-verification \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test10@example.com"}'
+Response: {"message":"Verification email sent successfully"}
+
+Request 4 (RATE LIMITED):
+curl -X POST http://localhost:3001/api/auth/resend-verification \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test10@example.com"}'
+Response: {"error":"Too many verification emails. Please try again in 60 minute(s)."}
+HTTP Status: 429
+
+✓ Rate limiting working correctly (429 on 4th request)

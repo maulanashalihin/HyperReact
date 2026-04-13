@@ -4,6 +4,7 @@ export interface User {
   email: string;
   fullName?: string;
   isActive: boolean;
+  role: 'user' | 'admin';
   createdAt: string;
   updatedAt: string;
 }

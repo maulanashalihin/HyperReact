@@ -8,6 +8,12 @@ export interface UserInterface {
   password: string;
   fullName?: string;
   isActive: boolean;
+  role: 'user' | 'admin';
+  emailVerified: boolean;
+  emailVerificationToken: string | null;
+  emailVerificationExpires: Date | null;
+  resetToken: string | null;
+  resetTokenExpires: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -39,6 +45,30 @@ export const User = new EntitySchema<UserInterface>({
     isActive: {
       type: 'boolean',
       default: true,
+    },
+    role: {
+      type: 'varchar',
+      default: 'user',
+    },
+    emailVerified: {
+      type: 'boolean',
+      default: false,
+    },
+    emailVerificationToken: {
+      type: 'varchar',
+      nullable: true,
+    },
+    emailVerificationExpires: {
+      type: 'datetime',
+      nullable: true,
+    },
+    resetToken: {
+      type: 'varchar',
+      nullable: true,
+    },
+    resetTokenExpires: {
+      type: 'datetime',
+      nullable: true,
     },
     createdAt: {
       type: 'datetime',

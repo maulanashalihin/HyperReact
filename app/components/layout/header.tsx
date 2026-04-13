@@ -6,9 +6,11 @@ import { Avatar } from '../ui/avatar';
 import {
   LayoutDashboard,
   Users,
+  Settings,
   LogOut,
   Moon,
   Sun,
+  Shield,
 } from 'lucide-react';
 
 export function Header() {
@@ -56,6 +58,22 @@ export function Header() {
                 >
                   <Users size={16} />
                   <span className="hidden sm:inline">Users</span>
+                </Link>
+                {user?.role === 'admin' && (
+                  <Link
+                    to="/admin/users"
+                    className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+                  >
+                    <Shield size={16} />
+                    <span className="hidden sm:inline">Admin</span>
+                  </Link>
+                )}
+                <Link
+                  to="/settings/profile"
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+                >
+                  <Settings size={16} />
+                  <span className="hidden sm:inline">Settings</span>
                 </Link>
                 <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
               </>

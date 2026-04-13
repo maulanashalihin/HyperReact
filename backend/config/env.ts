@@ -4,7 +4,7 @@ export const env = {
   NODE_ENV: process.env.NODE_ENV || 'development',
   PORT: parseInt(process.env.PORT || '3001', 10),
   JWT_SECRET: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
-  JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || '7d',
+  JWT_EXPIRES_IN: (process.env.JWT_EXPIRES_IN || '7d') as any,
   DATABASE_PATH: process.env.DATABASE_PATH || 'database.sqlite',
 };
 

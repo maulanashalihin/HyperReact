@@ -1,0 +1,46 @@
+=== Password Reset Flow Test Results ===
+
+1. FORGOT-PASSWORD ENDPOINT TEST:
+Request:
+curl -X POST http://localhost:3001/api/auth/forgot-password \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com"}'
+
+Response:
+{"message":"If an account exists with that email, a password reset link has been sent."}
+HTTP Status: 200
+
+Token generated: cb514281-354e-4776-8a90-23d3ed482700
+Token expires: 1 hour from generation
+
+2. RESET-PASSWORD ENDPOINT TEST:
+Request:
+curl -X POST http://localhost:3001/api/auth/reset-password \
+  -H "Content-Type: application/json" \
+  -d '{"token":"cb514281-354e-4776-8a90-23d3ed482700","newPassword":"newpassword123"}'
+
+Response:
+{"message":"Password has been reset successfully."}
+HTTP Status: 200
+
+3. LOGIN WITH NEW PASSWORD TEST:
+Request:
+curl -X POST http://localhost:3001/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","password":"newpassword123"}'
+
+Response:
+{"message":"Login successful","user":{"id":"e4ed9d50-e8dc-476a-957d-6e3941372850","username":"testuser","email":"test@example.com"},"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."}
+HTTP Status: 200
+
+4. TOKEN INVALIDATION TEST (reuse attempt):
+Request:
+curl -X POST http://localhost:3001/api/auth/reset-password \
+  -H "Content-Type: application/json" \
+  -d '{"token":"cb514281-354e-4776-8a90-23d3ed482700","newPassword":"anotherpassword"}'
+
+Response:
+{"error":"Invalid or expired reset token"}
+HTTP Status: 400
+
+✓ All tests passed!

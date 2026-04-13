@@ -72,6 +72,7 @@ export default function UsersPage() {
     try {
       await usersApi.delete(userToDelete, token);
       toast.success({
+        type: 'success',
         title: 'User deleted',
         description: 'The user has been successfully removed.',
       });
@@ -79,6 +80,7 @@ export default function UsersPage() {
       setUserToDelete(null);
     } catch (err: any) {
       toast.error({
+        type: 'error',
         title: 'Delete failed',
         description: err.message || 'Failed to delete user',
       });

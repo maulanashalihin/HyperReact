@@ -3,6 +3,7 @@ import HyperExpress from 'hyper-express';
 import { initializeDatabase } from './config/database';
 import { setupAuthRoutes } from './routes/auth.route';
 import { setupUsersRoutes } from './routes/users.route';
+import { setupAdminRoutes } from './routes/admin.route';
 import { env, validateEnv } from './config/env';
 
 async function bootstrap(): Promise<void> {
@@ -58,6 +59,10 @@ async function bootstrap(): Promise<void> {
     const usersRouter = new HyperExpress.Router();
     setupUsersRoutes(usersRouter);
     server.use('/api/users', usersRouter);
+
+    const adminRouter = new HyperExpress.Router();
+    setupAdminRoutes(adminRouter);
+    server.use('/api/admin', adminRouter);
 
     // Start server
     await server.listen(env.PORT);

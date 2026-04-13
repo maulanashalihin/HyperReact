@@ -25,12 +25,14 @@ export default function Register() {
     try {
       await register(username, email, password, fullName || undefined);
       success({
+        type: 'success',
         title: 'Account created!',
         description: 'Welcome to React SPA!',
       });
       navigate('/dashboard');
     } catch (err: any) {
       error({
+        type: 'error',
         title: 'Registration failed',
         description: err.message || 'Please try again',
       });

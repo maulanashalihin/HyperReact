@@ -8,4 +8,4 @@
 
 .sisyphus
 # Database
-/backend/*.sqlite
+/data/*.sqlite

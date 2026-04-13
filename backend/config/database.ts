@@ -7,7 +7,7 @@ import { join } from 'path';
 const isTest = process.env.NODE_ENV === 'test' || process.env.VITEST === 'true';
 const databasePath = isTest
   ? join(process.cwd(), 'backend', 'test.sqlite')
-  : env.DATABASE_PATH;
+  : join(process.cwd(), 'data', 'database.sqlite');
 
 export const AppDataSource = new DataSource({
   type: 'better-sqlite3',

@@ -3,7 +3,9 @@
     "allow": [
       "WebFetch(ui.shadcn.com)",
       "WebFetch(lucide.dev)",
-      "Bash(rm *)"
+      "Bash(rm *)",
+      "Bash(lsof *)",
+      "Bash(mv *)"
     ]
   },
   "$version": 3
